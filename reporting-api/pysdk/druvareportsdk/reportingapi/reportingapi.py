@@ -14,7 +14,7 @@
 
 from druvareportsdk.lib.restlib import restlib
 
-reportingapi_base_path = "/platform/reportsvc/"
+reportingapi_base_path = "/platform/reporting/"
 total_attempts = 3
 delay = 0
 
