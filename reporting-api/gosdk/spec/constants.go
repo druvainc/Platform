@@ -7,7 +7,7 @@ const (
 
 // URL Prefixes
 const (
-	ReportingPrefix = "/platform/reportsvc"
+	ReportingPrefix = "/platform/reporting"
 )
 
 // Resources
