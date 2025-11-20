@@ -2,10 +2,11 @@ package reports
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"log"
-	"math/rand"
+	"math/big"
 	"net/http"
 	"os"
 	"time"
@@ -20,6 +21,13 @@ import (
 type ReportsClient struct {
 	AccessToken string
 	RestClient  gorestlib.RestClientInterface
+}
+
+// getRandomRetryDelay generates a random delay between 1-30 seconds for retry backoff
+func (client *ReportsClient) getRandomRetryDelay() int {
+	max := big.NewInt(30)
+	n, _ := rand.Int(rand.Reader, max)
+	return int(n.Int64()) + 1 // +1 to make range 1-30 instead of 0-29
 }
 
 // NewLogger returns new logger with UTC timezone and package prefix
@@ -72,11 +80,10 @@ func (client *ReportsClient) GetReportList(version string, queryParameters map[s
 		if apiError, ok := err.(restliberror.RestLibError); ok {
 			if apiError.Code == http.StatusTooManyRequests {
 				logger.Printf("GetReportList: client.RestClient.Post: http.StatusTooManyRequests encountered, Retrying....")
-				rand.Seed(time.Now().UnixNano())
 				delay := 0
 				retryCount := 1
 				for retryCount <= 3 {
-					delay = delay + rand.Intn(30) + 1
+					delay = delay + client.getRandomRetryDelay()
 					logger.Printf("GetReportList: Sleeping for %v seconds", delay)
 					time.Sleep(time.Duration(delay * int(time.Second)))
 					err := client.RestClient.Get(getReportListPath, &response, queryParameters, headers)
@@ -149,11 +156,10 @@ func (client *ReportsClient) GetReport(reportID string, version string, pageToke
 		if apiError, ok := err.(restliberror.RestLibError); ok {
 			if apiError.Code == http.StatusTooManyRequests {
 				logger.Printf("GetReport: client.RestClient.Post: http.StatusTooManyRequests encountered, Retrying....")
-				rand.Seed(time.Now().UnixNano())
 				delay := 0
 				retryCount := 1
 				for retryCount <= 3 {
-					delay = delay + rand.Intn(30) + 1
+					delay = delay + client.getRandomRetryDelay()
 					logger.Printf("GetReport: Sleeping for %v seconds", delay)
 					time.Sleep(time.Duration(delay * int(time.Second)))
 					err := client.RestClient.Post(getReportResourcePath, request, &response, headers)
