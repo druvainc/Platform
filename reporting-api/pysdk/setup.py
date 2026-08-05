@@ -4,7 +4,7 @@ install_requires=[
     "oauthlib==3.2.2",
     "requests==2.30.0",
     "requests-oauthlib==1.3.1",
-    "urllib3==2.0.2"
+    "urllib3==2.6.3"
     ]
 setup(
     name='druvareportsdk',
